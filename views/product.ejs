@@ -31,6 +31,17 @@
       <h2>THÔNG TIN SẢN PHẨM</h2>
       <hr>
       <h3><%= label.descriptionTitle %></h3>
+      <dl class="details">
+        <div><dt>Tính năng lõi:</dt><dd><%= label.productFeature %></dd></div>
+        <div><dt>Dự án - phân khu:</dt><dd><%= label.projectArea %></dd></div>
+        <div><dt>Ngày giao hàng:</dt><dd><%= label.deliveryDate %></dd></div>
+        <div><dt>Ngày hoàn thành T&amp;C:</dt><dd><%= label.tcCompletionDate %></dd></div>
+        <div><dt>Ngày kích hoạt bảo hành:</dt><dd><%= label.activationDate %></dd></div>
+        <div><dt>Thời hạn bảo hành:</dt><dd><%= label.warrantyMonths %></dd></div>
+        <div><dt>Ngày kết thúc bảo hành:</dt><dd><%= label.warrantyEndDate %></dd></div>
+        <div><dt>Số C/O:</dt><dd><%= label.coReference %></dd></div>
+        <div><dt>Số C/Q:</dt><dd><%= label.cqReference %></dd></div>
+      </dl>
       <p><%= label.description %></p>
       <% if (label.productImages?.length) { %>
         <div class="product-gallery">
