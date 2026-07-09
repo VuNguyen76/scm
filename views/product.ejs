@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, noarchive">
+  <title>Thông tin hàng hóa - sản phẩm</title>
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+<body>
+  <main class="page">
+    <div class="topbar" aria-hidden="true"></div>
+
+    <section class="section product-summary">
+      <h1><%= label.productName %></h1>
+      <dl class="details">
+        <div><dt>Ngày cấp tem:</dt><dd><%= label.issuedDate %></dd></div>
+        <div><dt>Số seri tem:</dt><dd><%= label.serialNumber %></dd></div>
+        <div><dt>Số giấy chứng nhận:</dt><dd><%= label.certificateNumber %></dd></div>
+        <div><dt>Tên đơn vị:</dt><dd><%= label.organizationName %></dd></div>
+        <div><dt>Số lần đã kiểm tra tem:</dt><dd><%= label.scanCount %></dd></div>
+      </dl>
+
+      <% if (label.certificateImage) { %>
+        <hr>
+        <img class="certificate" src="<%= label.certificateImage %>" alt="Giấy chứng nhận kiểm định">
+      <% } %>
+    </section>
+
+    <section class="section description">
+      <h2>THÔNG TIN SẢN PHẨM</h2>
+      <hr>
+      <h3><%= label.descriptionTitle %></h3>
+      <p><%= label.description %></p>
+      <% if (label.productImages?.length) { %>
+        <div class="product-gallery">
+          <% label.productImages.forEach((image, index) => { %>
+            <img src="<%= image %>" alt="Hình ảnh sản phẩm <%= index + 1 %>" loading="lazy">
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="section issuer">
+      <h2>ĐƠN VỊ PHÁT HÀNH TEM</h2>
+      <hr>
+      <h3><%= label.issuer.name %></h3>
+      <% if (label.issuer.address) { %>
+        <p><span>Địa chỉ:</span> <%= label.issuer.address %></p>
+      <% } %>
+      <% if (label.issuer.phone) { %>
+        <p><span>Số điện thoại:</span> <a href="tel:<%= label.issuer.phone %>"><%= label.issuer.phone %></a></p>
+      <% } %>
+      <% if (label.issuer.email) { %>
+        <p><span>Email:</span> <a href="mailto:<%= label.issuer.email %>"><%= label.issuer.email %></a></p>
+      <% } %>
+      <% if (label.issuer.website) { %>
+        <p><span>Website:</span> <a href="<%= label.issuer.website %>" rel="noopener"><%= label.issuer.website %></a></p>
+      <% } %>
+    </section>
+
+    <p class="notice">Lưu ý: thông tin sản phẩm bên trên được cung cấp từ hệ thống quản lý của Saigoncomm.</p>
+  </main>
+</body>
+</html>

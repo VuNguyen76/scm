@@ -1,0 +1,5 @@
+
+> scm@1.0.0 start
+> node src/server.js
+
+SCM đang chạy tại http://127.0.0.1:3001
