@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, noarchive">
-  <title>Thông tin hàng hóa - sản phẩm</title>
+  <title>Thông tin sản phẩm - Saigoncomm</title>
   <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
@@ -12,41 +12,40 @@
     <div class="topbar" aria-hidden="true"></div>
 
     <section class="section product-summary">
-      <h1><%= label.productName %></h1>
+      <h1>Thông tin tem lưu hành</h1>
       <dl class="details">
-        <div><dt>Ngày cấp tem:</dt><dd><%= label.issuedDate %></dd></div>
-        <div><dt>Số seri tem:</dt><dd><%= label.serialNumber %></dd></div>
-        <div><dt>Số giấy chứng nhận:</dt><dd><%= label.certificateNumber %></dd></div>
-        <div><dt>Tên đơn vị:</dt><dd><%= label.organizationName %></dd></div>
-        <div><dt>Số lần đã kiểm tra tem:</dt><dd><%= label.scanCount %></dd></div>
+        <div><dt>Ngày phát hành tem:</dt><dd><%= label.issuedDate %></dd></div>
+        <div><dt>Số series tem:</dt><dd><%= label.serialNumber %></dd></div>
+        <div><dt>Đơn vị phát hành:</dt><dd><%= label.organizationName %></dd></div>
+        <div><dt>Số lượt quét QR:</dt><dd><%= label.scanCount %></dd></div>
       </dl>
 
-      <% if (label.certificateImage) { %>
-        <hr>
-        <img class="certificate" src="<%= label.certificateImage %>" alt="Giấy chứng nhận kiểm định">
-      <% } %>
     </section>
 
     <section class="section description">
       <h2>THÔNG TIN SẢN PHẨM</h2>
       <hr>
-      <h3><%= label.descriptionTitle %></h3>
+      <h3><%= label.productName %></h3>
       <dl class="details">
-        <div><dt>Tính năng lõi:</dt><dd><%= label.productFeature %></dd></div>
+        <div><dt>Tên sản phẩm:</dt><dd><%= label.productName %></dd></div>
+        <div><dt>Tính năng chính:</dt><dd><%= label.productFeature %></dd></div>
         <div><dt>Dự án - phân khu:</dt><dd><%= label.projectArea %></dd></div>
         <div><dt>Ngày giao hàng:</dt><dd><%= label.deliveryDate %></dd></div>
         <div><dt>Ngày hoàn thành T&amp;C:</dt><dd><%= label.tcCompletionDate %></dd></div>
-        <div><dt>Ngày kích hoạt bảo hành:</dt><dd><%= label.activationDate %></dd></div>
+        <div><dt>Ngày bắt đầu bảo hành:</dt><dd><%= label.activationDate %></dd></div>
         <div><dt>Thời hạn bảo hành:</dt><dd><%= label.warrantyMonths %></dd></div>
         <div><dt>Ngày kết thúc bảo hành:</dt><dd><%= label.warrantyEndDate %></dd></div>
-        <div><dt>Số C/O:</dt><dd><%= label.coReference %></dd></div>
-        <div><dt>Số C/Q:</dt><dd><%= label.cqReference %></dd></div>
+        <div><dt>Số giấy phép lưu hành:</dt><dd><%= label.circulationLicenseNo %></dd></div>
+        <div><dt>Ngày cấp giấy phép lưu hành:</dt><dd><%= label.circulationLicenseDate %></dd></div>
+        <div><dt>Số chứng nhận xuất xứ (C/O):</dt><dd><%= label.coReference %></dd></div>
+        <div><dt>Số chứng nhận chất lượng (C/Q):</dt><dd><%= label.cqReference %></dd></div>
       </dl>
-      <p><%= label.description %></p>
+
       <% if (label.productImages?.length) { %>
+        <h3>HÌNH ẢNH VÀ TÀI LIỆU SẢN PHẨM</h3>
         <div class="product-gallery">
-          <% label.productImages.forEach((image, index) => { %>
-            <img src="<%= image %>" alt="Hình ảnh sản phẩm <%= index + 1 %>" loading="lazy">
+          <% label.productImages.forEach((image) => { %>
+            <img src="<%= image.url %>" alt="<%= image.alt %>" loading="lazy">
           <% }) %>
         </div>
       <% } %>
@@ -70,7 +69,7 @@
       <% } %>
     </section>
 
-    <p class="notice">Lưu ý: thông tin sản phẩm bên trên được cung cấp từ hệ thống quản lý của Saigoncomm.</p>
+    <p class="notice">Thông tin được cung cấp từ hệ thống quản lý tem lưu hành của Saigoncomm.</p>
   </main>
 </body>
 </html>

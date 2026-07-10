@@ -3,6 +3,7 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { findIssuedLabelByHash } from "./data/labels.js";
+import { getProductMediaRoot } from "./product-media.js";
 
 const app = express();
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -12,13 +13,14 @@ app.disable("x-powered-by");
 app.set("view engine", "ejs");
 app.set("views", path.join(projectDir, "views"));
 app.use("/public", express.static(path.join(projectDir, "public"), { maxAge: 0 }));
+app.use("/media", express.static(getProductMediaRoot(), { maxAge: "1h", index: false }));
 
 app.get("/", async (req, res, next) => {
   const id = String(req.query.id ?? "").trim().toLowerCase();
 
   if (!/^[a-f0-9]{32,64}$/.test(id)) {
     return res.status(404).render("not-found", {
-      message: "Không tìm thấy thông tin kiểm soát sản phẩm."
+      message: "Không tìm thấy thông tin tem."
     });
   }
 
@@ -26,7 +28,7 @@ app.get("/", async (req, res, next) => {
     const label = await findIssuedLabelByHash(id);
     if (!label) {
       return res.status(404).render("not-found", {
-        message: "Tem chưa được phát hành hoặc không tồn tại."
+        message: "Tem chưa được gán vào sản phẩm hoặc không tồn tại."
       });
     }
 
@@ -49,7 +51,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-const port = Number(process.env.PORT || 3001);
+const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || "0.0.0.0";
 
 app.listen(port, host, () => {

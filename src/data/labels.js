@@ -1,7 +1,7 @@
 import pg from "pg";
+import { ensureProductMedia } from "../product-media.js";
 
 const { Pool } = pg;
-
 const schema = process.env.DB_SCHEMA || "adempiere";
 
 const pool = new Pool({
@@ -24,13 +24,6 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const fallbackImages = [
-  "/public/images/product.jpg",
-  "/public/images/product-detail-1.png",
-  "/public/images/product-detail-3.png",
-  "/public/images/product-detail-4.png"
-];
-
 export async function findIssuedLabelByHash(hash) {
   const client = await pool.connect();
 
@@ -42,8 +35,6 @@ export async function findIssuedLabelByHash(hash) {
         select
           l.scm_label_id,
           l.documentno as serial_number,
-          l.trackinghash,
-          l.labelstatus,
           l.issuedate,
           l.scancount,
           l.productfeature,
@@ -53,18 +44,19 @@ export async function findIssuedLabelByHash(hash) {
           l.activationdate,
           l.warrantymonths,
           l.warrantyenddate,
-          b.circulationlicenseno,
-          b.circulationlicensedate,
-          b.coreference,
-          b.cqreference,
           p.name as product_name,
-          p.productfeature as demo_product_feature
+          p.productfeature as product_default_feature,
+          p.circulationlicenseno as circulation_license_no,
+          p.circulationlicensedate as circulation_license_date,
+          p.coreference as co_reference,
+          p.cqreference as cq_reference
         from ${schema}.scm_label l
-        left join ${schema}.scm_labelbatch b on b.scm_labelbatch_id = l.scm_labelbatch_id
-        left join ${schema}.scm_demoproduct p on p.scm_demoproduct_id = l.scm_demoproduct_id
+        left join ${schema}.scm_demoproduct p
+          on p.scm_demoproduct_id = l.scm_demoproduct_id
         where lower(l.trackinghash) = $1
           and l.isactive = 'Y'
-          and l.labelstatus = 'ISSUED'
+          and l.isassigned = 'Y'
+          and l.scm_demoproduct_id is not null
         limit 1
         for update of l
       `,
@@ -91,31 +83,37 @@ export async function findIssuedLabelByHash(hash) {
 
     await client.query("commit");
 
-    const feature = row.productfeature || row.demo_product_feature || "";
-    const warrantyMonths = row.warrantymonths ? `${Number(row.warrantymonths)} tháng` : "";
+    const warrantyMonths = row.warrantymonths
+      ? `${Number(row.warrantymonths)} tháng`
+      : "";
 
     return {
       issuedDate: formatDate(row.issuedate),
       serialNumber: row.serial_number || "",
-      certificateNumber: row.circulationlicenseno || "",
       organizationName: "Công ty Cổ phần SAIGONCOMM",
       scanCount: Number(scan.rows[0]?.scancount || row.scancount || 0),
-      productName: row.product_name || "Thông tin sản phẩm",
-      productFeature: feature,
+      productName: row.product_name || "",
+      productFeature: row.productfeature || row.product_default_feature || "",
       projectArea: row.projectarea || "",
       deliveryDate: formatDate(row.deliverydate),
       tcCompletionDate: formatDate(row.tccompletiondate),
       activationDate: formatDate(row.activationdate),
       warrantyMonths,
       warrantyEndDate: formatDate(row.warrantyenddate),
-      circulationLicenseDate: formatDate(row.circulationlicensedate),
-      coReference: row.coreference || "",
-      cqReference: row.cqreference || "",
-      certificateImage: "/public/images/certificate.jpg",
-      productImages: fallbackImages,
-      descriptionTitle: row.product_name || "Thông tin sản phẩm",
-      description:
-        "Thông tin bên dưới được phát hành từ hệ thống quản lý tem lưu hành của Saigoncomm.",
+      circulationLicenseNo: row.circulation_license_no || "",
+      circulationLicenseDate: formatDate(row.circulation_license_date),
+      coReference: row.co_reference || "",
+      cqReference: row.cq_reference || "",
+      productImages: (
+        await ensureProductMedia({
+          pool,
+          schema,
+          productId: row.scm_demoproduct_id
+        }).catch((error) => {
+          console.error(`Không thể đọc attachment sản phẩm ${row.scm_demoproduct_id}:`, error.message);
+          return { images: [] };
+        })
+      ).images,
       issuer: {
         name: "CÔNG TY CỔ PHẦN SAIGONCOMM",
         address:
