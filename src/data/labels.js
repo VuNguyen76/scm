@@ -1,5 +1,5 @@
 import pg from "pg";
-import { ensureProductMedia } from "../product-media.js";
+import { listProductMedia } from "../product-media.js";
 
 const { Pool } = pg;
 const schema = process.env.DB_SCHEMA || "adempiere";
@@ -34,6 +34,7 @@ export async function findIssuedLabelByHash(hash) {
       `
         select
           l.scm_label_id,
+          l.scm_demoproduct_id,
           l.documentno as serial_number,
           l.issuedate,
           l.scancount,
@@ -104,16 +105,11 @@ export async function findIssuedLabelByHash(hash) {
       circulationLicenseDate: formatDate(row.circulation_license_date),
       coReference: row.co_reference || "",
       cqReference: row.cq_reference || "",
-      productImages: (
-        await ensureProductMedia({
-          pool,
-          schema,
-          productId: row.scm_demoproduct_id
-        }).catch((error) => {
-          console.error(`Không thể đọc attachment sản phẩm ${row.scm_demoproduct_id}:`, error.message);
-          return { images: [] };
-        })
-      ).images,
+      productImages: await listProductMedia({
+        pool,
+        schema,
+        productId: row.scm_demoproduct_id
+      }),
       issuer: {
         name: "CÔNG TY CỔ PHẦN SAIGONCOMM",
         address:
@@ -134,3 +130,5 @@ export async function findIssuedLabelByHash(hash) {
 export async function closeLabelPool() {
   await pool.end();
 }
+
+export { pool, schema };

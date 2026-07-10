@@ -2,8 +2,8 @@ import "dotenv/config";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { findIssuedLabelByHash } from "./data/labels.js";
-import { getProductMediaRoot } from "./product-media.js";
+import { findIssuedLabelByHash, pool, schema } from "./data/labels.js";
+import { processPendingProductMedia, readProductMedia } from "./product-media.js";
 
 const app = express();
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -13,7 +13,24 @@ app.disable("x-powered-by");
 app.set("view engine", "ejs");
 app.set("views", path.join(projectDir, "views"));
 app.use("/public", express.static(path.join(projectDir, "public"), { maxAge: 0 }));
-app.use("/media", express.static(getProductMediaRoot(), { maxAge: "1h", index: false }));
+
+app.get("/media/:mediaId", async (req, res, next) => {
+  const mediaId = Number(req.params.mediaId);
+  if (!Number.isSafeInteger(mediaId) || mediaId <= 0) return res.sendStatus(404);
+  try {
+    const media = await readProductMedia({ pool, schema, mediaId });
+    if (!media) return res.sendStatus(404);
+    res.set({
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "Content-Type": media.mimetype,
+      "Content-Disposition": `inline; filename="${encodeURIComponent(media.filename)}"`,
+      "X-Content-Type-Options": "nosniff"
+    });
+    return res.send(media.binarydata);
+  } catch (error) {
+    return next(error);
+  }
+});
 
 app.get("/", async (req, res, next) => {
   const id = String(req.query.id ?? "").trim().toLowerCase();
@@ -53,6 +70,15 @@ app.use((error, req, res, next) => {
 
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || "0.0.0.0";
+const mediaIntervalMs = Number(process.env.MEDIA_PROCESS_INTERVAL_MS || 5_000);
+
+const prepareMedia = () =>
+  processPendingProductMedia({ pool, schema }).catch((error) => {
+    console.error("Không thể chuẩn bị media sản phẩm:", error.message);
+  });
+
+prepareMedia();
+setInterval(prepareMedia, mediaIntervalMs).unref();
 
 app.listen(port, host, () => {
   console.log(`SCM đang chạy tại http://127.0.0.1:${port}`);
